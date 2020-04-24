@@ -87,11 +87,3 @@ class CondConv2d(nn.Module):
         if self.groups != 1:
             s += ', groups={groups}'
         return s.format(**self.__dict__)
-
-if __name__ == '__main__':
-    input_tensor = torch.rand(2, 3, 224, 224)
-    conv_layer = CondConv2d(num_experts=4, in_channels=3, out_channels=6, kernel_size=3, 
-                 stride=1, padding=0, dilation=1, groups=1, bias=False,
-                 padding_mode='zeros')
-    output = conv_layer(input_tensor)
-    print("end")
