@@ -135,7 +135,7 @@ class CondRotConv2d(nn.Module):
 
         avg_x = x.mean((2, 3))  # avg_x.shape = [batch_size, Cin]
         gate_x = torch.sigmoid(self.fc_a(avg_x))  # gate_x.shape = [batch_size, num_experts]
-        theta_x = torch.sigmoid(self.fc_a(avg_x)) * self.proportion  # theta_x.shape = [batch_size, num_experts]
+        theta_x = torch.sigmoid(self.fc_theta(avg_x)) * self.proportion  # theta_x.shape = [batch_size, num_experts]
 
         # weight.shape = [num_experts * out_channels, in_channels // self.groups, kernel_size, kernel_size]
         weight = weight.view(self.num_experts, self.out_channels, self.in_channels // self.groups, 
