@@ -112,7 +112,7 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_
                                       [0.,  0., 0.,  0.,    0.,  0.,   a, 1-a, 0.],           # w'(-1,-1)
                                       [0.,  0., 0.,  0., 1-c+b, y-b,  0., x-b,  b],           # w'( 0,-1)
                                       [0.,  0., 0.,  0.,    0., 1-a,  0.,  0.,  a]])   # w'( 1,-1).cuda()
-    alpha[idx * 9:(idx+1) * 9, idx * 9:(idx+1) * 9] = sub_alpha
+        alpha[idx * 9:(idx+1) * 9, idx * 9:(idx+1) * 9] = sub_alpha
 
     _, Cout, Cin, _, _ = weights.shape  # [num_experts, Cout, Cin, 3, 3]
     weights = weights.transpose(0, 1).transpose(1, 2)
@@ -120,7 +120,7 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_
     # ---> [Cout, Cin, num_experts, 3, 3]
     weights = weights.contiguous().view(Cout * Cin, num_experts * 9)
     # ---> [Cout * Cin, num_experts * 9]
-    weights = weight.transpose(0, 1)
+    weights = weights.transpose(0, 1)
     # ---> [num_experts * 9, Cout * Cin]
     weights = torch.mm(alpha, weights)
     # [num_experts * 9, num_experts * 9] x [num_experts * 9, Cout * Cin] ---> [num_experts * 9, Cout * Cin]
@@ -134,82 +134,10 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_
     return weights
 
 
-def plotshow(input, i=0, j=0, name='before'):
+def _plotshow(input, i=0, j=0, name='before'):
     plt.matshow(input[i][j].numpy())
     plt.show()
-    plt.savefig(f'{name}.png')
-
-
-def augmentKernel(weight, flip_dim=None,rotate_mode = 'bilinear', kernel_theta = 0., sigma = 0.1):
-    # if kernel_theta == 0.:
-    #     return weight
-    # assert(weight.shape[2]==weight.shape[3]==3)
-    # assert(-45. <= kernel_theta <= 45.)
-    # if flip_dim is not None:
-    #     assert(set(flip_dim).issubset(set([2,3])))
-    #     weight = torch.flip(weight,flip_dim)
-    is_clockwise = kernel_theta > 0
-    kernel_theta = kernel_theta if is_clockwise else -kernel_theta 
-
-    x = math.cos(kernel_theta / 180. * math.pi)
-    y = math.sin(kernel_theta / 180. * math.pi)
-    
-    if rotate_mode == 'gaussian':
-        if is_clockwise:
-            T = torch.tensor([[x, y],
-                            [-y, x]])
-        else:
-            T = torch.tensor([[x, -y],
-                            [y, x]])
-        A = torch.tensor([[-1.,-1.],[-1.,0.],[-1.,1.],
-                        [0,-1],[0,0],[0,1],
-                        [1,-1],[1,0],[1,1]])
-        A = A.transpose(0,1)    # A: 2x9
-        B = torch.mm(T,A)       # B: 2x9
-        # print(A)
-        # print(B)
-        C = torch.mm(A.transpose(0,1),B) # C: 9x9
-        A_sq = (torch.sum(A**2,0).view(9,1)).repeat(1,9) # 9x1 -> 9x9
-        B_sq = (torch.sum(B**2,0).view(1,9)).repeat(9,1) # 1x9 -> 9x9
-        Alpha = A_sq + B_sq -2*C
-
-        # Beta = torch.zeros(9,9)
-        # for i in range(9):
-        #     for j in range(9):
-        #         Beta[i,j] = torch.sum((A[:,i]-B[:,j])**2)
-        # print(Alpha - Beta)
-        Alpha = torch.exp(-Alpha / sigma) # alpha: 9x9
-        Alpha = Alpha / torch.sum(Alpha,1).view(9,1)
-        Alpha[4,:] = torch.tensor([0.,0,0,0,1,0,0,0,0])
-        inp_c, out_c, _,_ = weight.shape
-        weight = weight.view(inp_c*out_c,9)
-        weight = weight.transpose(0,1)
-        weight = (torch.mm(Alpha.cuda(),weight).transpose(0,1)).view(inp_c,out_c,3,3)
-    else:  # Bilinear
-        a = x-y
-        b = x*y
-        c = x+y
-
-        Alpha = torch.tensor([[a, 1-a, 0.,0.,0.,0.,0.,0.,0.],
-                            [0.,x-b,b,0.,1-c+b,y-b,0.,0.,0.],
-                            [0.,0.0,a,0.,0.0,1-a,0.,0.,0.],
-                            [b,y-b,0.,x-b,1-c+b,0.,0.,0.,0.],
-                            [0.,0.,0.,0.,1.,0.,0.,0.,0.],
-                            [0.,0.,0.,0.,1-c+b,x-b,0.,y-b,b],
-                            [0.,0.,0.,1-a,0.,0.,a,0.,0.],
-                            [0.,0.,0.,y-b,1-c+b,0.,b,x-b,0.],
-                            [0.,0.,0.,0.,0.,0.,0.,1-a,a]]).cuda()
-        inp_c, out_c, _,_ = weight.shape
-        inp_c, out_c, _,_ = weight.shape
-        if is_clockwise:
-            weight = weight.transpose(2,3).contiguous().view(inp_c*out_c,9)
-            weight = weight.transpose(0,1)
-            weight = (torch.mm(Alpha,weight).transpose(0,1)).view(inp_c,out_c,3,3).transpose(2,3)
-        else:
-            weight = weight.view(inp_c*out_c,9)
-            weight = weight.transpose(0,1)
-            weight = (torch.mm(Alpha,weight).transpose(0,1)).view(inp_c,out_c,3,3)
-    return weight
+    plt.savefig(f'images/{name}.png')
 
 
 if __name__ == '__main__':
@@ -238,14 +166,17 @@ if __name__ == '__main__':
         ]]], 
         ])
     print(input_tensor.shape)
-    kernel_theta_list = [10.0, 20.0, 30.0, 40.0]
-    output = rotate_3x3_kernel_adaptive_forloop(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
+    kernel_theta_list = [10.0, 20.0, 30.0, 40.0, ]
+    # output = rotate_3x3_kernel_adaptive_forloop(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
+    output = rotate_3x3_kernel_adaptive_matrixcompute(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
 
-    plotshow(input_tensor[0], name='img_before0')
-    plotshow(output[0], name='img_after0')
-    plotshow(input_tensor[1], name='img_before1')
-    plotshow(output[1], name='img_after1')
-    plotshow(input_tensor[2], name='img_before2')
-    plotshow(output[2], name='img_after2')
-    plotshow(input_tensor[3], name='img_before3')
-    plotshow(output[3], name='img_after3')
+
+
+    _plotshow(input_tensor[0], name='img_before0')
+    _plotshow(output[0], name='img_after0')
+    _plotshow(input_tensor[1], name='img_before1')
+    _plotshow(output[1], name='img_after1')
+    _plotshow(input_tensor[2], name='img_before2')
+    _plotshow(output[2], name='img_after2')
+    _plotshow(input_tensor[3], name='img_before3')
+    _plotshow(output[3], name='img_after3')
