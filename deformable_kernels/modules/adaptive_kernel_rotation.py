@@ -11,7 +11,7 @@ The last kernel rotation function only rotates a batch of Cout x Cin x k x k ker
 In this function, we will rotation num_experts Cout x Cin x k x k kernels with different degrees respectively.
 """
 
-def rotate_3x3_kernel_adaptive_forloop(weights, num_experts, kernel_theta_list):
+def rotate_3x3_kernel_adaptive_forloop(weights, num_experts, kernel_theta_vector):
     """
     Args:
         weights: tensor, shape = [num_experts, Cout, Cin, k, k]
@@ -20,12 +20,12 @@ def rotate_3x3_kernel_adaptive_forloop(weights, num_experts, kernel_theta_list):
     """
     assert(weights.shape[3] == 3)
     assert(weights.shape[4] == 3)
-    assert(max(kernel_theta_list) <= 45.0)
-    assert(min(kernel_theta_list) >= - 45.0)
+    assert(max(kernel_theta_vector) <= 45.0)
+    assert(min(kernel_theta_vector) >= - 45.0)
 
     for idx in range(num_experts):
 
-        kernel_theta = kernel_theta_list[idx]
+        kernel_theta = kernel_theta_vector[idx]
         weight = weights[idx]
 
         is_clockwise = kernel_theta < 0
@@ -65,19 +65,20 @@ def rotate_3x3_kernel_adaptive_forloop(weights, num_experts, kernel_theta_list):
     return weights
 
 
-def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_list):
+def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta):
     """
     Args:
         weights: tensor, shape = [num_experts, Cout, Cin, k, k]
         num_experts: number of experts
-        kernel_theta: a list of float number with the size of num_experts
+        kernel_theta: a tensor vector of float number with the size of num_experts
+    Return:
+        weights: rotated weights tensor, shape = [num_experts, Cout, Cin, 3, 3]
     """
     assert(weights.shape[3] == 3)
     assert(weights.shape[4] == 3)
-    assert(max(kernel_theta_list) <= 45.0)
-    assert(min(kernel_theta_list) >= - 45.0)
+    assert(max(kernel_theta) <= 45.0)
+    assert(min(kernel_theta) >= - 45.0)
 
-    kernel_theta = torch.tensor(kernel_theta_list)
     is_clockwise = kernel_theta < 0
     kernel_theta = torch.abs(kernel_theta)
 
