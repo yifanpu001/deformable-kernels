@@ -93,6 +93,7 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_
         x, y = x_vector[idx], y_vector[idx]
         a, b, c = a_vector[idx], b_vector[idx], c_vector[idx]
         if is_clockwise[idx] == False:
+            # anti-clockwise (theta > 0)
             sub_alpha = torch.tensor([[ a, 1-a, 0.,  0.,     0., 0.,  0.,  0., 0.],           # w'(-1, 1)
                                       [0., x-b,  b,  0., 1-c+b, y-b,  0.,  0., 0.],           # w'( 0, 1)
                                       [0.,  0.,  a,  0.,    0., 1-a,  0.,  0., 0.],           # w'( 1, 1)
@@ -103,6 +104,7 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_
                                       [0.,  0., 0., y-b, 1-c+b,  0.,   b, x-b, 0.],           # w'( 0,-1)
                                       [0.,  0., 0.,  0.,    0.,  0.,  0., 1-a,  a]])   # w'( 1,-1).cuda()
         else:
+            # clockwise (theta < 0)
             sub_alpha = torch.tensor([[ a,  0., 0., 1-a,     0., 0.,  0.,  0., 0.],           # w'(-1, 1)
                                       [ b, x-b, 0., y-b, 1-c+b,  0.,  0.,  0., 0.],           # w'( 0, 1)
                                       [0., 1-a,  a,  0.,    0.,  0.,  0.,  0., 0.],           # w'( 1, 1)
