@@ -82,3 +82,7 @@ Desktop.ini
 *.out
 *.pdf
 *.synctex.gz
+test_tensor.py
+test_main.py
+.vscode/settings.json
+notebook.ipynb
