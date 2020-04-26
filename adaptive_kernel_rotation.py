@@ -108,7 +108,7 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta_
                                       [0., 1-a,  a,  0.,    0.,  0.,  0.,  0., 0.],           # w'( 1, 1)
                                       [0.,  0., 0., x-b, 1-c+b,  0.,   b, y-b, 0.],           # w'(-1, 0)
                                       [0.,  0., 0.,  0.,    1.,  0.,  0.,  0., 0.],           # w'( 0, 0)
-                                      [0., y-b,  b,  0., 1-c+b,  0.,  0.,  0., 0.],           # w'( 1, 0)
+                                      [0., y-b,  b,  0., 1-c+b, x-b,  0.,  0., 0.],           # w'( 1, 0)
                                       [0.,  0., 0.,  0.,    0.,  0.,   a, 1-a, 0.],           # w'(-1,-1)
                                       [0.,  0., 0.,  0., 1-c+b, y-b,  0., x-b,  b],           # w'( 0,-1)
                                       [0.,  0., 0.,  0.,    0., 1-a,  0.,  0.,  a]])   # w'( 1,-1).cuda()
@@ -141,7 +141,7 @@ def _plotshow(input, i=0, j=0, name='before'):
 
 
 if __name__ == '__main__':
-    # input_tensor = torch.rand(4, 1, 1, 3, 3)  # [num_experts, Cout, Cin, k, k]
+    # input_tensor = torch.rand(8, 1, 1, 3, 3)  # [num_experts, Cout, Cin, k, k]
 
     input_tensor = torch.tensor([
         [[[
@@ -164,9 +164,29 @@ if __name__ == '__main__':
             [-1., 0., 1.],
             [-1., 0., 1.],
         ]]], 
+                [[[
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+        ]]], 
+        [[[
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+        ]]], 
+        [[[
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+        ]]], 
+        [[[
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+            [-1., 0., 1.],
+        ]]], 
         ])
     print(input_tensor.shape)
-    kernel_theta_list = [10.0, 20.0, 30.0, 40.0, ]
+    kernel_theta_list = [10.0, 20.0, 30.0, 40.0, -10.0, -20.0, -30.0, -40.0,]
     # output = rotate_3x3_kernel_adaptive_forloop(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
     output = rotate_3x3_kernel_adaptive_matrixcompute(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
 
@@ -180,3 +200,11 @@ if __name__ == '__main__':
     _plotshow(output[2], name='img_after2')
     _plotshow(input_tensor[3], name='img_before3')
     _plotshow(output[3], name='img_after3')
+    _plotshow(input_tensor[4], name='img_before4')
+    _plotshow(output[4], name='img_after4')
+    _plotshow(input_tensor[5], name='img_before5')
+    _plotshow(output[5], name='img_after5')
+    _plotshow(input_tensor[6], name='img_before6')
+    _plotshow(output[6], name='img_after6')
+    _plotshow(input_tensor[7], name='img_before7')
+    _plotshow(output[7], name='img_after7')
