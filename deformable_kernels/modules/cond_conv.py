@@ -121,15 +121,17 @@ class CondRotConv2d(nn.Module):
         self.fc_theta = nn.Linear(in_channels, num_experts)
         self.fc_theta.zero_init = True
 
-    def _combine(self, weight, gate_x_slice):
-        return torch.mm(gate_x_slice, weight)
+    def _combine(self, weight, gate_x_slice, num_experts):
         # [1, n] x [n, Cout x Cin // groups x k x k]
         # ---> [1, Cout x Cin // groups x k x k]
+        return torch.mm(gate_x_slice.unsqueeze(0), 
+                        weight.contiguous().view(num_experts, -1))
+
 
     @amp.float_function
     def dynaic_inference(self, x, weight):
         # TODO(Hang Gao @ 12/26): make sure passing weight to amp is necessary.
-        n = x.shape[0]  # n = batch_size
+        batch_size = x.shape[0]  # n = batch_size
 
         avg_x = x.mean((2, 3))  # avg_x.shape = [batch_size, Cin]
         gate_x = torch.sigmoid(self.fc_a(avg_x))  # gate_x.shape = [batch_size, num_experts]
@@ -138,17 +140,18 @@ class CondRotConv2d(nn.Module):
         # weight.shape = [num_experts * out_channels, in_channels // self.groups, kernel_size, kernel_size]
         weight = weight.view(self.num_experts, self.out_channels, self.in_channels // self.groups, 
                              self.kernel_size, self.kernel_size)
-        weight_out = torch.zeros(self.num_experts, self.out_channels * (self.in_channels // self.groups) \ 
+        weight_out = torch.zeros(batch_size, self.out_channels * (self.in_channels // self.groups) \
                                  * self.kernel_size  * self.kernel_size)  # initialize a empty tensor
-        for idx in range(n):
-            weight_out[idx] = _combine(rotate_3x3_kernel_adaptive_matrixcompute(weight, self.num_experts, 
-                                       theta_x[idx]), gate_x[idx])
-        weight_out.reshape(                                      
-            n * self.out_channels,                      
+        for idx in range(batch_size):
+            weight_out[idx] = self._combine(rotate_3x3_kernel_adaptive_matrixcompute(weight, self.num_experts, 
+                                       theta_x[idx]), gate_x[idx], self.num_experts)
+        weight_out = weight_out.reshape(                                      
+            batch_size * self.out_channels,                      
             self.in_channels // self.groups,
             self.kernel_size,
             self.kernel_size,
         )
+
         return weight_out
 
     def forward(self, x):

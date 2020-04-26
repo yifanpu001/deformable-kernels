@@ -7,7 +7,10 @@
 #
 # Distributed under terms of the MIT license.
 
-from .cond_conv import CondConv2d
+from .cond_conv import (
+    CondConv2d,
+    CondRotConv2d,
+)
 from .deform_conv import DeformConv2d
 from .deform_kernel import (
     GlobalDeformKernel2d,
