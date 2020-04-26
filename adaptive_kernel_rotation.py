@@ -141,70 +141,142 @@ def _plotshow(input, i=0, j=0, name='before'):
 
 
 if __name__ == '__main__':
-    # input_tensor = torch.rand(8, 1, 1, 3, 3)  # [num_experts, Cout, Cin, k, k]
 
     input_tensor = torch.tensor([
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-                [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
-        [[[
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-            [-1., 0., 1.],
-        ]]], 
+        [
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+        ],
+        [
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+        ],
+        [
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+        ],
+        [
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+            [
+                [
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                    [-1., 0., 1.],
+                ],
+                [
+                    [ 1., 1., 1.],
+                    [ 0., 0., 0.],
+                    [-1.,-1.,-1.],
+                ],
+            ],
+        ],
         ])
+    input_tensor = torch.rand(4, 128, 128, 3, 3)  # [num_experts, Cout, Cin, k, k]
     print(input_tensor.shape)
-    kernel_theta_list = [10.0, 20.0, 30.0, 40.0, -10.0, -20.0, -30.0, -40.0,]
-    # output = rotate_3x3_kernel_adaptive_forloop(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
+    kernel_theta_list = [10.0, 40.0, -10.0, -40.0,]
+
+    import time
+    start = time.time()
+    output = rotate_3x3_kernel_adaptive_forloop(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
+    end = time.time()
+    print(f'for loop time      : {end - start}')
+
+    start = time.time()
     output = rotate_3x3_kernel_adaptive_matrixcompute(input_tensor.clone().detach(), input_tensor.shape[0], kernel_theta_list)
+    end = time.time()
+    print(f'matrix compute time: {end - start}')
 
 
-
-    _plotshow(input_tensor[0], name='img_before0')
-    _plotshow(output[0], name='img_after0')
-    _plotshow(input_tensor[1], name='img_before1')
-    _plotshow(output[1], name='img_after1')
-    _plotshow(input_tensor[2], name='img_before2')
-    _plotshow(output[2], name='img_after2')
-    _plotshow(input_tensor[3], name='img_before3')
-    _plotshow(output[3], name='img_after3')
-    _plotshow(input_tensor[4], name='img_before4')
-    _plotshow(output[4], name='img_after4')
-    _plotshow(input_tensor[5], name='img_before5')
-    _plotshow(output[5], name='img_after5')
-    _plotshow(input_tensor[6], name='img_before6')
-    _plotshow(output[6], name='img_after6')
-    _plotshow(input_tensor[7], name='img_before7')
-    _plotshow(output[7], name='img_after7')
+    # _plotshow(input_tensor[0], name='img_before0')
+    # _plotshow(output[0], name='img_after0')
+    # _plotshow(input_tensor[1], name='img_before1')
+    # _plotshow(output[1], name='img_after1')
+    # _plotshow(input_tensor[2], name='img_before2')
+    # _plotshow(output[2], name='img_after2')
+    # _plotshow(input_tensor[3], name='img_before3')
+    # _plotshow(output[3], name='img_after3')
+    # _plotshow(input_tensor[4], name='img_before4')
+    # _plotshow(output[4], name='img_after4')
+    # _plotshow(input_tensor[5], name='img_before5')
+    # _plotshow(output[5], name='img_after5')
+    # _plotshow(input_tensor[6], name='img_before6')
+    # _plotshow(output[6], name='img_after6')
+    # _plotshow(input_tensor[7], name='img_before7')
+    # _plotshow(output[7], name='img_after7')
