@@ -148,7 +148,7 @@ class CondRotConv2d(nn.Module):
         weight = weight.view(self.num_experts, self.out_channels, self.in_channels // self.groups, 
                              self.kernel_size, self.kernel_size)
         weight_out = torch.zeros(batch_size, self.out_channels * (self.in_channels // self.groups) \
-                                 * self.kernel_size  * self.kernel_size)  # initialize a empty tensor
+                                 * self.kernel_size  * self.kernel_size).cuda()  # initialize a empty tensor
         for idx in range(batch_size):
             weight_out[idx] = self._combine(rotate_3x3_kernel_adaptive_matrixcompute(weight, self.num_experts, 
                                        theta_x[idx]), gate_x[idx], self.num_experts)
@@ -241,7 +241,7 @@ class CondRotConv2d_bmm(nn.Module):
         weight = weight.view(self.num_experts, self.out_channels, self.in_channels // self.groups, 
                              self.kernel_size, self.kernel_size)
         weight_out = torch.zeros(batch_size, self.num_experts, self.out_channels, (self.in_channels // self.groups),
-                                 self.kernel_size, self.kernel_size)  # initialize a empty tensor
+                                 self.kernel_size, self.kernel_size).cuda()  # initialize a empty tensor
         for idx in range(batch_size):
             weight_out[idx] = rotate_3x3_kernel_adaptive_matrixcompute(weight, self.num_experts, theta_x[idx]).unsqueeze(0)
 
@@ -338,7 +338,7 @@ class CondRotConv2d_forloop(nn.Module):
         weight = weight.view(self.num_experts, self.out_channels, self.in_channels // self.groups, 
                              self.kernel_size, self.kernel_size)
         weight_out = torch.zeros(batch_size, self.out_channels * (self.in_channels // self.groups) \
-                                 * self.kernel_size  * self.kernel_size)  # initialize a empty tensor
+                                 * self.kernel_size  * self.kernel_size).cuda()  # initialize a empty tensor
         for idx in range(batch_size):
             weight_out[idx] = self._combine(rotate_3x3_kernel_adaptive_forloop(weight, self.num_experts, 
                                        theta_x[idx]), gate_x[idx], self.num_experts)
@@ -431,7 +431,7 @@ class CondRotConv2d_bmm_forloop(nn.Module):
         weight = weight.view(self.num_experts, self.out_channels, self.in_channels // self.groups, 
                              self.kernel_size, self.kernel_size)
         weight_out = torch.zeros(batch_size, self.num_experts, self.out_channels, (self.in_channels // self.groups),
-                                 self.kernel_size, self.kernel_size)  # initialize a empty tensor
+                                 self.kernel_size, self.kernel_size).cuda()  # initialize a empty tensor
         for idx in range(batch_size):
             weight_out[idx] = rotate_3x3_kernel_adaptive_forloop(weight, self.num_experts, theta_x[idx]).unsqueeze(0)
 
