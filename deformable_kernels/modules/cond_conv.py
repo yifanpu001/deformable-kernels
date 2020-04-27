@@ -15,7 +15,7 @@ import torch
 
 from apex import amp
 from torch import nn
-from .adaptive_kernel_rotation import rotate_3x3_kernel_adaptive_matrixcompute
+from .adaptive_kernel_rotation import rotate_3x3_kernel_adaptive_matrixcompute, rotate_3x3_kernel_adaptive_forloop
 
 class CondConv2d(nn.Module):
 
@@ -147,7 +147,7 @@ class CondRotConv2d(nn.Module):
         weight_out = torch.zeros(batch_size, self.out_channels * (self.in_channels // self.groups) \
                                  * self.kernel_size  * self.kernel_size)  # initialize a empty tensor
         for idx in range(batch_size):
-            weight_out[idx] = self._combine(rotate_3x3_kernel_adaptive_matrixcompute(weight, self.num_experts, 
+            weight_out[idx] = self._combine(rotate_3x3_kernel_adaptive_forloop(weight, self.num_experts, 
                                        theta_x[idx]), gate_x[idx], self.num_experts)
         weight_out = weight_out.reshape(                                      
             batch_size * self.out_channels,                      
