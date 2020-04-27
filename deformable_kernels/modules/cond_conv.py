@@ -5,6 +5,10 @@
 # Email  : hangg.sv7@gmail.com
 # Date   : 12/25/2019
 #
+# Author of CondRotConv: Yifan Pu
+# Email: utmov1776@buaa.edu.cn
+# Data: 2020/04/27
+#
 # Distributed under terms of the MIT license.
 
 import torch
@@ -131,7 +135,7 @@ class CondRotConv2d(nn.Module):
     @amp.float_function
     def dynaic_inference(self, x, weight):
         # TODO(Hang Gao @ 12/26): make sure passing weight to amp is necessary.
-        batch_size = x.shape[0]  # n = batch_size
+        batch_size = x.shape[0]  # b = batch_size
 
         avg_x = x.mean((2, 3))  # avg_x.shape = [batch_size, Cin]
         gate_x = torch.sigmoid(self.fc_a(avg_x))  # gate_x.shape = [batch_size, num_experts]
