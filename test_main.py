@@ -9,7 +9,7 @@ from deformable_kernels.modules import (
     CondRotConv2d_bmm_forloop,
 )
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1, 2, 3'  # '4, 5, 6, 7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'  # '0, 1, 2, 3'
 Cin = 64
 Cout = 64
 
@@ -31,7 +31,7 @@ conv_layer_CondRotConv2d_bmm_forloop = CondRotConv2d_bmm_forloop(num_experts=4, 
 
 L1, L2, L3, L4, L5 = [], [], [], [], []
 
-for idx in range(10):
+for idx in range(20):
     print(f'{idx}  ', end='')
     if (idx + 1) % 20 == 0:
         print('')
@@ -62,7 +62,7 @@ for idx in range(10):
     output_CondRotConv2d_bmm_forloop = conv_layer_CondRotConv2d_bmm_forloop(input_tensor)
     end = time.time()
     L5.append(end - start)
-
+print('')
 print(f"CondConv2d                time: {sum(L1) / len(L1)}")
 print(f"CondRotConv2d             time: {sum(L2) / len(L2)}")
 print(f"CondRotConv2d_bmm         time: {sum(L3) / len(L3)}")
