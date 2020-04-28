@@ -46,7 +46,8 @@ def rotate_3x3_kernel_adaptive_forloop(weights, num_experts, kernel_theta_vector
                               [0.,  0., 0.,  0., 1-c+b, x-b,  0., y-b,  b],           # w'( 1, 0)
                               [0.,  0., 0., 1-a,    0.,  0.,   a,  0., 0.],           # w'(-1,-1)
                               [0.,  0., 0., y-b, 1-c+b,  0.,   b, x-b, 0.],           # w'( 0,-1)
-                              [0.,  0., 0.,  0.,    0.,  0.,  0., 1-a,  a]]).cuda()   # w'( 1,-1).cuda()
+                              [0.,  0., 0.,  0.,    0.,  0.,  0., 1-a,  a]],          # w'( 1,-1)
+                             device=weights.device)
 
         Cout, Cin, _, _ = weight.shape
 
@@ -89,7 +90,7 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta)
     b_vector = torch.mul(x_vector, y_vector)
     c_vector = x_vector + y_vector
 
-    alpha = torch.zeros(num_experts * 9, num_experts * 9).cuda()
+    alpha = torch.zeros(num_experts * 9, num_experts * 9, device=weights.device)
     for idx in range(num_experts):
         x, y = x_vector[idx], y_vector[idx]
         a, b, c = a_vector[idx], b_vector[idx], c_vector[idx]
@@ -103,7 +104,8 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta)
                                       [0.,  0., 0.,  0., 1-c+b, x-b,  0., y-b,  b],           # w'( 1, 0)
                                       [0.,  0., 0., 1-a,    0.,  0.,   a,  0., 0.],           # w'(-1,-1)
                                       [0.,  0., 0., y-b, 1-c+b,  0.,   b, x-b, 0.],           # w'( 0,-1)
-                                      [0.,  0., 0.,  0.,    0.,  0.,  0., 1-a,  a]])   # w'( 1,-1).cuda()
+                                      [0.,  0., 0.,  0.,    0.,  0.,  0., 1-a,  a]],          # w'( 1,-1)
+                                     device=weights.device)
         else:
             # clockwise (theta < 0)
             sub_alpha = torch.tensor([[ a,  0., 0., 1-a,     0., 0.,  0.,  0., 0.],           # w'(-1, 1)
@@ -114,8 +116,9 @@ def rotate_3x3_kernel_adaptive_matrixcompute(weights, num_experts, kernel_theta)
                                       [0., y-b,  b,  0., 1-c+b, x-b,  0.,  0., 0.],           # w'( 1, 0)
                                       [0.,  0., 0.,  0.,    0.,  0.,   a, 1-a, 0.],           # w'(-1,-1)
                                       [0.,  0., 0.,  0., 1-c+b, y-b,  0., x-b,  b],           # w'( 0,-1)
-                                      [0.,  0., 0.,  0.,    0., 1-a,  0.,  0.,  a]])   # w'( 1,-1).cuda()
-        alpha[idx * 9:(idx+1) * 9, idx * 9:(idx+1) * 9] = sub_alpha.cuda()
+                                      [0.,  0., 0.,  0.,    0., 1-a,  0.,  0.,  a]],          # w'( 1,-1)
+                                     device=weights.device)
+        alpha[idx * 9:(idx+1) * 9, idx * 9:(idx+1) * 9] = sub_alpha
 
     _, Cout, Cin, _, _ = weights.shape  # [num_experts, Cout, Cin, 3, 3]
     weights = weights.transpose(0, 1).transpose(1, 2)

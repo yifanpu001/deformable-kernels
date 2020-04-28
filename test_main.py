@@ -9,7 +9,7 @@ from deformable_kernels.modules import (
     CondRotConv2d_bmm_forloop,
 )
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '4, 5, 6, 7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '4'  # '0, 1, 2, 3'  # '4, 5, 6, 7'
 Cin = 64
 Cout = 64
 
@@ -108,4 +108,7 @@ CondRotConv2d_bmm         time: 0.6552649986743927
 CondRotConv2d_forloop     time: 0.6211545383930206
 CondRotConv2d_bmm_forloop time: 0.7428855657577514
 end
+
+result(GPU, device=weights.device)
+卡不空，还没测。
 """
